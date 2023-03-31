@@ -1,17 +1,16 @@
 package org.apache.flink.streaming.examples.liability.operator;
 
 import org.apache.flink.api.common.functions.FlatMapFunction;
-import org.apache.flink.streaming.examples.liability.data.BetStatus;
+import org.apache.flink.streaming.examples.liability.data.BetEvent;
 import org.apache.flink.streaming.examples.liability.data.SelectionLiability;
-import org.apache.flink.streaming.examples.liability.data.StakeConvertedBetEvent;
 import org.apache.flink.util.Collector;
 
 import java.util.HashMap;
 
-public class SelectionLiabilityCalculator implements FlatMapFunction<StakeConvertedBetEvent, SelectionLiability> {
+public class SelectionLiabilityCalculator implements FlatMapFunction<BetEvent, SelectionLiability> {
     @Override
     public void flatMap(
-            StakeConvertedBetEvent stakeConvertedBetEvent,
+            BetEvent stakeConvertedBetEvent,
             Collector<SelectionLiability> collector) throws Exception {
         SelectionLiability liability = new SelectionLiability();
         liability.selectionId = stakeConvertedBetEvent.selectionId;

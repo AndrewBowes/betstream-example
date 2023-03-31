@@ -11,6 +11,9 @@ public class Topology {
     public static DataStream<SelectionLiability> flow(DataStream<BetEvent> betStream) {
         return betStream
                 .filter(new ActiveDCFilter(activeDC))
+                .keyBy(value -> value.betId + "-" + value.sequenceNumber)
+                .reduce(new BetEventReduce())
+                .filter(new DuplicateFilter())
                 .map(new BetStakeCurrencyConverter(currencyExchangeService))
                 .flatMap(new SelectionLiabilityCalculator())
                 .keyBy(value -> value.selectionId)
