@@ -1,17 +1,14 @@
 package org.apache.flink.streaming.examples.liability;
 
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.examples.liability.data.Bet;
+import org.apache.flink.streaming.examples.liability.data.BetEvent;
 import org.apache.flink.streaming.examples.liability.data.SelectionLiability;
-import org.apache.flink.streaming.examples.liability.operator.ActiveDCFilter;
-import org.apache.flink.streaming.examples.liability.operator.SelectionLiabilityCalculator;
-import org.apache.flink.streaming.examples.liability.operator.BetStakeCurrencyConverter;
-import org.apache.flink.streaming.examples.liability.operator.SelectionLiabilityReduce;
+import org.apache.flink.streaming.examples.liability.operator.*;
 
 public class Topology {
     private static ActiveDC activeDC = new ActiveDC(true);
     private static CurrencyExchangeService currencyExchangeService = new CurrencyExchangeService(CurrencyExchangeService.createExchangeRates());
-    public static DataStream<SelectionLiability> flow(DataStream<Bet> betStream) {
+    public static DataStream<SelectionLiability> flow(DataStream<BetEvent> betStream) {
         return betStream
                 .filter(new ActiveDCFilter(activeDC))
                 .map(new BetStakeCurrencyConverter(currencyExchangeService))

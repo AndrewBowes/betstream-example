@@ -2,7 +2,7 @@ package org.apache.flink.streaming.examples.liability;
 
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
-import org.apache.flink.streaming.examples.liability.data.Bet;
+import org.apache.flink.streaming.examples.liability.data.BetEvent;
 import org.apache.flink.streaming.examples.liability.data.SelectionLiability;
 import org.apache.flink.streaming.examples.liability.util.CLI;
 
@@ -13,7 +13,7 @@ public class Main {
         env.setRuntimeMode(params.getExecutionMode());
         env.getConfig().setGlobalJobParameters(params);
 
-        DataStream<Bet> bets = env.fromElements(Bet.bets).name("in-memory-bets");
+        DataStream<BetEvent> bets = env.fromElements(BetEvent.betEvents).name("in-memory-bets");
 
         final DataStream<SelectionLiability> selectionLiabilities = Topology.flow(bets);
 
