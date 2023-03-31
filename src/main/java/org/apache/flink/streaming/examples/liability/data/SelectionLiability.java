@@ -4,11 +4,11 @@ import java.util.Map;
 
 public class SelectionLiability {
     public int selectionId;
-    public float cumulativeLiability;
+    public float liability;
     public Map<String, Float> stateLiability;
 
     @Override
     public String toString() {
-        return "selectionId: " + selectionId + " cumulativeLiability: " + cumulativeLiability + " states: " + stateLiability;
+        return "selectionId: " + selectionId + " liability: " + liability + " states: " + stateLiability;
     }
 }

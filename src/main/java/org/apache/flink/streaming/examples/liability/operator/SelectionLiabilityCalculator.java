@@ -12,8 +12,8 @@ public class SelectionLiabilityCalculator implements FlatMapFunction<BetEvent, S
     public void flatMap(
             BetEvent stakeConvertedBetEvent,
             Collector<SelectionLiability> collector) throws Exception {
-        SelectionLiability liability = new SelectionLiability();
-        liability.selectionId = stakeConvertedBetEvent.selectionId;
+        SelectionLiability selectionLiability = new SelectionLiability();
+        selectionLiability.selectionId = stakeConvertedBetEvent.selectionId;
 
         float stakeDelta;
         switch(stakeConvertedBetEvent.status) {
@@ -30,10 +30,10 @@ public class SelectionLiabilityCalculator implements FlatMapFunction<BetEvent, S
                 stakeDelta = 0;
 
         }
-        liability.cumulativeLiability = stakeDelta;
-        liability.stateLiability = new HashMap<>();
-        liability.stateLiability.put(stakeConvertedBetEvent.state, stakeDelta);
+        selectionLiability.liability = stakeDelta;
+        selectionLiability.stateLiability = new HashMap<>();
+        selectionLiability.stateLiability.put(stakeConvertedBetEvent.state, stakeDelta);
 
-        collector.collect(liability);
+        collector.collect(selectionLiability);
     }
 }
