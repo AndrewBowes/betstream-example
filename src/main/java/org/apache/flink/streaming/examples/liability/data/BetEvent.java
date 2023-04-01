@@ -27,7 +27,6 @@ public class BetEvent {
     public String state;
     public String currency;
     public BetStatus status;
-    public boolean duplicate;
 
     private static BetEvent createBetEvent(int betId, BetStatus status, int selectionId, float stake, String currency, String state) {
         BetEvent betEvent = new BetEvent();
@@ -37,7 +36,6 @@ public class BetEvent {
         betEvent.stake = stake;
         betEvent.currency = currency;
         betEvent.state = state;
-        betEvent.duplicate = false;
 
         return betEvent;
     }

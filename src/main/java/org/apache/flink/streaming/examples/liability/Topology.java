@@ -12,8 +12,7 @@ public class Topology {
         return betStream
                 .filter(new ActiveDCFilter(activeDC))
                 .keyBy(value -> value.betId + "-" + value.status.name())
-                .reduce(new BetEventReduce())
-                .filter(new DuplicateFilter())
+                .flatMap(new BetEventDeduplicator())
                 .map(new BetStakeCurrencyConverter(currencyExchangeService))
                 .flatMap(new SelectionLiabilityCalculator())
                 .keyBy(value -> value.selectionId)
