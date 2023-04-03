@@ -9,11 +9,8 @@ import org.apache.flink.streaming.examples.liability.operator.*;
 import java.util.concurrent.TimeUnit;
 
 public class Topology {
-    private static ActiveDC activeDC = new ActiveDC(true);
-
     public static DataStream<SelectionLiability> flow(DataStream<BetEvent> betStream) {
         DataStream<BetEvent> betLiabilities = betStream
-                .filter(new ActiveDCFilter(activeDC))
                 .keyBy(value -> value.betId + "-" + value.status.name().substring(0, 1))
                 .flatMap(new BetEventDeduplicator());
 
