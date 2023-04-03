@@ -10,21 +10,21 @@ import java.util.HashMap;
 public class SelectionLiabilityCalculator implements FlatMapFunction<BetEvent, SelectionLiability> {
     @Override
     public void flatMap(
-            BetEvent stakeConvertedBetEvent,
+            BetEvent betEvent,
             Collector<SelectionLiability> collector) throws Exception {
         SelectionLiability selectionLiability = new SelectionLiability();
-        selectionLiability.selectionId = stakeConvertedBetEvent.selectionId;
+        selectionLiability.selectionId = betEvent.selectionId;
 
         float stakeDelta;
-        switch(stakeConvertedBetEvent.status) {
+        switch(betEvent.status) {
             case ACTIVE:
-                stakeDelta = stakeConvertedBetEvent.stake;
+                stakeDelta = betEvent.stake;
                 break;
             case CASHED_OUT:
-                stakeDelta = -(stakeConvertedBetEvent.stake / 2.0f);
+                stakeDelta = -(betEvent.stake / 2.0f);
                 break;
             case SETTLED:
-                stakeDelta = -stakeConvertedBetEvent.stake;
+                stakeDelta = -betEvent.stake;
                 break;
             default:
                 stakeDelta = 0;
@@ -32,7 +32,7 @@ public class SelectionLiabilityCalculator implements FlatMapFunction<BetEvent, S
         }
         selectionLiability.liability = stakeDelta;
         selectionLiability.stateLiability = new HashMap<>();
-        selectionLiability.stateLiability.put(stakeConvertedBetEvent.state, stakeDelta);
+        selectionLiability.stateLiability.put(betEvent.state, stakeDelta);
 
         collector.collect(selectionLiability);
     }
