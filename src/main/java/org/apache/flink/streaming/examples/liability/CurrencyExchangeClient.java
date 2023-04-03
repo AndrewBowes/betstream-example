@@ -5,7 +5,11 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 
 public class CurrencyExchangeClient {
-    private Map<String, Float> exchangeRates = createExchangeRates();
+    private final Map<String, Float> exchangeRates;
+
+    public CurrencyExchangeClient() {
+        exchangeRates = createExchangeRates();
+    }
 
     public CompletableFuture<Float> getExchangeRate(String currencyCode) {
         return CompletableFuture.completedFuture(exchangeRates.get(currencyCode));
