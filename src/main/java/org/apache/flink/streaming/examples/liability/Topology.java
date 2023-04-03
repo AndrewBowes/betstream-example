@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 public class Topology {
     public static DataStream<SelectionLiability> flow(DataStream<BetEvent> betStream) {
         DataStream<BetEvent> betEvents = betStream
+                .filter(new BetStatusFilter())
                 .keyBy(value -> value.betId + "-" + value.status.name().substring(0, 1));
 
         DataStream<BetEvent> distinctBetEvents = AsyncDataStream.unorderedWait(betEvents, new AsyncKeystoreRequest(), 1000, TimeUnit.MILLISECONDS, 100);
