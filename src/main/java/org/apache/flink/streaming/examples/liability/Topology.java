@@ -10,11 +10,12 @@ import java.util.concurrent.TimeUnit;
 
 public class Topology {
     public static DataStream<SelectionLiability> flow(DataStream<BetEvent> betStream) {
-        DataStream<BetEvent> betLiabilities = betStream
-                .keyBy(value -> value.betId + "-" + value.status.name().substring(0, 1))
-                .flatMap(new BetEventDeduplicator());
+        DataStream<BetEvent> betEvents = betStream
+                .keyBy(value -> value.betId + "-" + value.status.name().substring(0, 1));
 
-        return AsyncDataStream.unorderedWait(betLiabilities, new AsyncCurrencyExchangeRequest(), 1000, TimeUnit.MILLISECONDS, 100)
+        DataStream<BetEvent> distinctBetEvents = AsyncDataStream.unorderedWait(betEvents, new AsyncKeystoreRequest(), 1000, TimeUnit.MILLISECONDS, 100);
+
+        return AsyncDataStream.unorderedWait(distinctBetEvents, new AsyncCurrencyExchangeRequest(), 1000, TimeUnit.MILLISECONDS, 100)
                 .flatMap(new SelectionLiabilityCalculator())
                 .keyBy(value -> value.selectionId)
                 .reduce(new SelectionLiabilityReduce());
