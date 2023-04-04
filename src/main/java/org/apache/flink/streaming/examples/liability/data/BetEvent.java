@@ -1,7 +1,12 @@
 package org.apache.flink.streaming.examples.liability.data;
 
+import org.apache.flink.streaming.examples.liability.CurrencyExchangeClient;
+
+import java.util.Map;
+import java.util.Random;
+
 public class BetEvent {
-    public static BetEvent[] betEvents = new BetEvent[] {
+    /*public static BetEvent[] betEvents = new BetEvent[] {
             createBetEvent(1, BetStatus.ACTIVE, 1, 10, "gbp", "ny"), // 10 * 1.24 = 12.4
             createBetEvent(1, BetStatus.ACTIVE, 1, 10, "gbp", "ny"), // 10 * 1.24 = 12.4
             createBetEvent(1, BetStatus.ACTIVE, 1, 10, "gbp", "ny"), // 10 * 1.24 = 12.4
@@ -20,7 +25,8 @@ public class BetEvent {
 
             createBetEvent(2, BetStatus.SETTLED, 2, 5, "eur", "fl"),
             createBetEvent(2, BetStatus.SETTLED, 2, 5, "eur", "fl")
-    };
+    };*/
+    public static BetEvent[] betEvents = generateRandomBetEvents(100, 5);
     public int betId;
     public int selectionId;
     public float stake;
@@ -42,5 +48,37 @@ public class BetEvent {
         betEvent.state = state;
 
         return betEvent;
+    }
+
+    private static BetEvent[] generateRandomBetEvents(int count, int selectionCount) {
+        BetEvent[] betEvents = new BetEvent[count];
+        String[] currencyCodes = new String[] { "cad", "gbp", "eur", "jpy" };
+        String[] states = new String[] { "ca", "ny", "wa", "fl" };
+        Random random = new Random();
+        int currentCurrencyCodeIndex = 0;
+        int currentStateIndex = 0;
+
+        for(int i = 0; i < count; i+=1) {
+            betEvents[i] = createBetEvent(
+                    random.nextInt(99999),
+                    BetStatus.ACTIVE,
+                    random.nextInt(selectionCount),
+                    random.nextInt(100),
+                    currencyCodes[currentCurrencyCodeIndex],
+                    states[currentStateIndex]
+            );
+
+            currentCurrencyCodeIndex += 1;
+            if(currentCurrencyCodeIndex >= currencyCodes.length) {
+                currentCurrencyCodeIndex = 0;
+            }
+
+            currentStateIndex += 1;
+            if(currentStateIndex >= states.length) {
+                currentStateIndex = 0;
+            }
+        }
+
+        return betEvents;
     }
 }
