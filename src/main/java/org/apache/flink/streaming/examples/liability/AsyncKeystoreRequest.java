@@ -27,7 +27,7 @@ public class AsyncKeystoreRequest extends RichAsyncFunction<BetEvent, BetEvent> 
 
     @Override
     public void asyncInvoke(BetEvent betEvent, ResultFuture<BetEvent> resultFuture) throws Exception {
-        final Future<Boolean> newKey = client.registerKey(betEvent.betId + "-" + betEvent.status.name().substring(0, 1));
+        final Future<Boolean> newKey = client.registerKey(betEvent.getKey());
 
         CompletableFuture.supplyAsync(new Supplier<Boolean>() {
             @Override

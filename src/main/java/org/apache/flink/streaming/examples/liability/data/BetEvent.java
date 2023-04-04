@@ -28,6 +28,10 @@ public class BetEvent {
     public String currency;
     public BetStatus status;
 
+    public String getKey() {
+        return String.format("%s-%s", betId, status.name().substring(0, 1));
+    }
+
     private static BetEvent createBetEvent(int betId, BetStatus status, int selectionId, float stake, String currency, String state) {
         BetEvent betEvent = new BetEvent();
         betEvent.betId = betId;
