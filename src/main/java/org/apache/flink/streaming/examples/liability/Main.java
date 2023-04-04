@@ -15,7 +15,9 @@ public class Main {
 
         DataStream<BetEvent> bets = env.fromElements(BetEvent.betEvents).name("in-memory-bets");
 
-        final DataStream<SelectionLiability> selectionLiabilities = Topology.flow(bets);
+        final boolean currencyConvert = true;
+
+        final DataStream<SelectionLiability> selectionLiabilities = Topology.flow(bets, currencyConvert);
 
         selectionLiabilities.print();
 
