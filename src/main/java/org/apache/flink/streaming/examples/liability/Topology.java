@@ -17,7 +17,6 @@ public class Topology {
         DataStream<BetEvent> distinctBetEvents = AsyncDataStream.unorderedWait(betEvents, new AsyncKeystoreRequest(), 1000, TimeUnit.MILLISECONDS, 100);
 
         if(currencyConvert) {
-            distinctBetEvents = distinctBetEvents.keyBy(value -> value.currency);
             distinctBetEvents = AsyncDataStream.unorderedWait(distinctBetEvents, new AsyncCurrencyExchangeRequest(), 1000, TimeUnit.MILLISECONDS, 100);
         }
 
