@@ -14,10 +14,10 @@ public class Topology {
                 .filter(new BetStatusFilter())
                 .keyBy(value -> value.getKey());
 
-        DataStream<BetEvent> distinctBetEvents = AsyncDataStream.unorderedWait(betEvents, new AsyncKeystoreRequest(), 1000, TimeUnit.MILLISECONDS, 100);
+        DataStream<BetEvent> distinctBetEvents = AsyncDataStream.unorderedWait(betEvents, new AsyncBetEventDeduplicator(), 1000, TimeUnit.MILLISECONDS, 100);
 
         if(currencyConvert) {
-            distinctBetEvents = AsyncDataStream.unorderedWait(distinctBetEvents, new AsyncCurrencyExchangeRequest(), 1000, TimeUnit.MILLISECONDS, 100);
+            distinctBetEvents = AsyncDataStream.unorderedWait(distinctBetEvents, new AsyncBetEventCurrencyConverter(), 1000, TimeUnit.MILLISECONDS, 100);
         }
 
         return distinctBetEvents
