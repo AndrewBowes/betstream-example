@@ -4,6 +4,7 @@
 **/*.iml
 .DS_Store
 .vscode
+keys.txt
 
 # Eclipse
 .project

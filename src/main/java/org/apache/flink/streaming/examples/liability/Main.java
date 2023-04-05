@@ -17,6 +17,8 @@ public class Main {
 
         final boolean currencyConvert = true;
 
+        KeystoreClient.initialiseFile();
+
         final DataStream<SelectionLiability> selectionLiabilities = Topology.flow(bets, currencyConvert);
 
         selectionLiabilities.print();
