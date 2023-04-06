@@ -44,7 +44,7 @@ public class AsyncBetEventCurrencyConverter extends RichAsyncFunction<BetEvent, 
             currencyConverted.selectionId = betEvent.selectionId;
             currencyConverted.betId = betEvent.betId;
             currencyConverted.currency = betEvent.currency;
-            currencyConverted.state = betEvent.state;
+            currencyConverted.destination = betEvent.destination;
             currencyConverted.status = betEvent.status;
             currencyConverted.stake = betEvent.stake * er;
 

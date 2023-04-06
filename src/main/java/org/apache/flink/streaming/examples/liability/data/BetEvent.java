@@ -30,7 +30,7 @@ public class BetEvent {
     public int betId;
     public int selectionId;
     public float stake;
-    public String state;
+    public String destination;
     public String currency;
     public BetStatus status;
 
@@ -38,14 +38,14 @@ public class BetEvent {
         return String.format("%s-%s", betId, status.name().substring(0, 1));
     }
 
-    private static BetEvent createBetEvent(int betId, BetStatus status, int selectionId, float stake, String currency, String state) {
+    private static BetEvent createBetEvent(int betId, BetStatus status, int selectionId, float stake, String currency, String destination) {
         BetEvent betEvent = new BetEvent();
         betEvent.betId = betId;
         betEvent.status = status;
         betEvent.selectionId = selectionId;
         betEvent.stake = stake;
         betEvent.currency = currency;
-        betEvent.state = state;
+        betEvent.destination = destination;
 
         return betEvent;
     }
@@ -53,10 +53,10 @@ public class BetEvent {
     private static BetEvent[] generateRandomBetEvents(int count, int selectionCount) {
         BetEvent[] betEvents = new BetEvent[count];
         String[] currencyCodes = new String[] { "cad", "gbp", "eur", "jpy" };
-        String[] states = new String[] { "ca", "ny", "wa", "fl" };
+        String[] destinations = new String[] { "ca", "ny", "wa", "fl" };
         Random random = new Random();
         int currentCurrencyCodeIndex = 0;
-        int currentStateIndex = 0;
+        int currentDestinationIndex = 0;
 
         for(int i = 0; i < count; i+=1) {
             betEvents[i] = createBetEvent(
@@ -65,7 +65,7 @@ public class BetEvent {
                     random.nextInt(selectionCount),
                     random.nextInt(100),
                     currencyCodes[currentCurrencyCodeIndex],
-                    states[currentStateIndex]
+                    destinations[currentDestinationIndex]
             );
 
             currentCurrencyCodeIndex += 1;
@@ -73,9 +73,9 @@ public class BetEvent {
                 currentCurrencyCodeIndex = 0;
             }
 
-            currentStateIndex += 1;
-            if(currentStateIndex >= states.length) {
-                currentStateIndex = 0;
+            currentDestinationIndex += 1;
+            if(currentDestinationIndex >= destinations.length) {
+                currentDestinationIndex = 0;
             }
         }
 

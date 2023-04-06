@@ -31,8 +31,8 @@ public class SelectionLiabilityCalculator implements FlatMapFunction<BetEvent, S
 
         }
         selectionLiability.liability = stakeDelta;
-        selectionLiability.stateLiability = new HashMap<>();
-        selectionLiability.stateLiability.put(betEvent.state, stakeDelta);
+        selectionLiability.destinationLiability = new HashMap<>();
+        selectionLiability.destinationLiability.put(betEvent.destination, stakeDelta);
 
         collector.collect(selectionLiability);
     }

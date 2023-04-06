@@ -5,10 +5,10 @@ import java.util.Map;
 public class SelectionLiability {
     public int selectionId;
     public float liability;
-    public Map<String, Float> stateLiability;
+    public Map<String, Float> destinationLiability;
 
     @Override
     public String toString() {
-        return "selectionId: " + selectionId + " liability: " + liability + " states: " + stateLiability;
+        return "selectionId: " + selectionId + " liability: " + liability + " destinations: " + destinationLiability;
     }
 }

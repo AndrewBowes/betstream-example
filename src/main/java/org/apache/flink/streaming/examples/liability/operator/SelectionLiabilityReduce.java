@@ -13,7 +13,7 @@ public class SelectionLiabilityReduce implements ReduceFunction<SelectionLiabili
         SelectionLiability t3 = new SelectionLiability();
         t3.liability = t1.liability + t2.liability;
         t3.selectionId = t1.selectionId;
-        t3.stateLiability = Stream.concat(t1.stateLiability.entrySet().stream(), t2.stateLiability.entrySet().stream()).collect(
+        t3.destinationLiability = Stream.concat(t1.destinationLiability.entrySet().stream(), t2.destinationLiability.entrySet().stream()).collect(
                 Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, (value1, value2) -> value1 + value2));
 
         return t3;
