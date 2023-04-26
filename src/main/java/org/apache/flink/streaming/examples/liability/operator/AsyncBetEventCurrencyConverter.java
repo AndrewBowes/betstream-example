@@ -4,7 +4,7 @@ import org.apache.flink.configuration.Configuration;
 import org.apache.flink.streaming.api.functions.async.ResultFuture;
 import org.apache.flink.streaming.api.functions.async.RichAsyncFunction;
 import org.apache.flink.streaming.examples.liability.CurrencyExchangeClient;
-import org.apache.flink.streaming.examples.liability.data.BetEvent;
+import org.apache.flink.streaming.examples.liability.data.*;
 
 import java.util.Collections;
 import java.util.concurrent.CompletableFuture;
@@ -12,7 +12,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
 
-public class AsyncBetEventCurrencyConverter extends RichAsyncFunction<BetEvent, BetEvent> {
+public class AsyncBetEventCurrencyConverter extends RichAsyncFunction<BetLiability, BetLiability> {
     private transient CurrencyExchangeClient client;
 
     @Override
@@ -26,8 +26,8 @@ public class AsyncBetEventCurrencyConverter extends RichAsyncFunction<BetEvent, 
     }
 
     @Override
-    public void asyncInvoke(BetEvent betEvent, ResultFuture<BetEvent> resultFuture) throws Exception {
-        final Future<Float> exchangeRate = client.getExchangeRate(betEvent.currency);
+    public void asyncInvoke(BetLiability betLiability, ResultFuture<BetLiability> resultFuture) throws Exception {
+        final Future<Float> exchangeRate = client.getExchangeRate(betLiability.betEvent.bet.currency);
 
         CompletableFuture.supplyAsync(new Supplier<Float>() {
             @Override
@@ -40,13 +40,21 @@ public class AsyncBetEventCurrencyConverter extends RichAsyncFunction<BetEvent, 
                 }
             }
         }).thenAccept( (Float er) -> {
-            BetEvent currencyConverted = new BetEvent();
-            currencyConverted.selectionId = betEvent.selectionId;
-            currencyConverted.betId = betEvent.betId;
-            currencyConverted.currency = betEvent.currency;
-            currencyConverted.destination = betEvent.destination;
-            currencyConverted.status = betEvent.status;
-            currencyConverted.stake = betEvent.stake * er;
+            BetEvent currencyConvertedBetEvent = new BetEvent();
+            BetLiability currencyConverted = new BetLiability();
+
+            Bet bet = betLiability.betEvent.bet;
+            Bet currencyConvertedBet = new Bet(
+                    bet.betId, bet.selectionId, bet.stake * er, bet.currentStake * er, bet.payout * er, bet.potentialWin * er, bet.destination,
+                    bet.currency, bet.status, bet.result, bet.changeInTerms
+            );
+            currencyConvertedBetEvent.bet = bet;
+            currencyConvertedBetEvent.state = betLiability.betEvent.state;
+
+            currencyConverted.betEvent = currencyConvertedBetEvent;
+            currencyConverted.currentLiability = betLiability.currentLiability * er;
+            currencyConverted.storedLiability = betLiability.storedLiability * er;
+
 
             resultFuture.complete(Collections.singleton(currencyConverted));
         });

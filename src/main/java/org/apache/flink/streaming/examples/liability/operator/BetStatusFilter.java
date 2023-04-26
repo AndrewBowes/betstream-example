@@ -6,10 +6,9 @@ import org.apache.flink.streaming.examples.liability.data.BetEvent;
 public class BetStatusFilter implements FilterFunction<BetEvent> {
     @Override
     public boolean filter(BetEvent betEvent) throws Exception {
-        switch(betEvent.status) {
+        switch(betEvent.state) {
             case ACTIVE:
-            case CASHED_OUT:
-            case SETTLED:
+            case FINAL:
                 return true;
             default:
                 return false;

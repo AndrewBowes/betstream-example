@@ -3,6 +3,7 @@ package org.apache.flink.streaming.examples.liability;
 import org.apache.flink.streaming.api.datastream.DataStream;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.examples.liability.data.BetEvent;
+import org.apache.flink.streaming.examples.liability.data.BetState;
 import org.apache.flink.streaming.examples.liability.data.SelectionLiability;
 import org.apache.flink.streaming.examples.liability.util.CLI;
 

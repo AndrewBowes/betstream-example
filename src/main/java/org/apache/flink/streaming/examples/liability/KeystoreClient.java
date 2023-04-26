@@ -13,11 +13,23 @@ public class KeystoreClient {
 
     }
 
-    public CompletableFuture<Boolean> registerKey(String key) {
-        if(!isKeyInFile(key)) {
-            appendKeyToFile(key);
-            return CompletableFuture.completedFuture(true);
+    public CompletableFuture<Boolean> updateFile(String betId, float liability) {
+        try {
+            try(BufferedReader br = new BufferedReader(new FileReader(FILEPATH))) {
+                for(String line; (line = br.readLine()) != null; ) {
+                    if(line.contains(betId)) {
+                        // Not currently working but theoretically should be removing old liability from datasource once
+                        // liability updates have been pushed to kafka
+                        line.trim();
+                    }
+                }
+            }
+        } catch (IOException ex) {
+            System.out.println(String.format("Keystore file load failed: %s", ex.getMessage()));
+            return null;
         }
+
+        appendKeyToFile(betId + ":" + liability);
 
         return CompletableFuture.completedFuture(false);
     }
@@ -34,22 +46,26 @@ public class KeystoreClient {
         }
     }
 
-    private boolean isKeyInFile(String key) {
+    public CompletableFuture<String> retrieveExistingKeyForBet(String betId) {
+
+        return CompletableFuture.completedFuture(betIdExistsInFile(betId));
+    }
+
+    private String betIdExistsInFile(String betId) {
         try {
             try(BufferedReader br = new BufferedReader(new FileReader(FILEPATH))) {
                 for(String line; (line = br.readLine()) != null; ) {
-                    if(line.equals(key)) {
-                        return true;
+                    if(line.contains(betId)) {
+                        return line;
                     }
                 }
-                return false;
+                return null;
             }
         } catch (IOException ex) {
             System.out.println(String.format("Keystore file load failed: %s", ex.getMessage()));
-            return false;
+            return null;
         }
     }
-
     public static void initialiseFile() {
         try {
             File file = new File(FILEPATH);

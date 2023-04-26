@@ -1,52 +1,63 @@
 package org.apache.flink.streaming.examples.liability.data;
 
-import org.apache.flink.streaming.examples.liability.CurrencyExchangeClient;
-
-import java.util.Map;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
+
+import static org.apache.flink.streaming.examples.liability.data.Reason.ORIGINAL_VALUES;
+import static org.apache.flink.streaming.examples.liability.data.Reason.PARTIAL_CASHOUT;
+
 
 public class BetEvent {
-    /*public static BetEvent[] betEvents = new BetEvent[] {
-            createBetEvent(1, BetStatus.ACTIVE, 1, 10, "gbp", "ny"), // 10 * 1.24 = 12.4
-            createBetEvent(1, BetStatus.ACTIVE, 1, 10, "gbp", "ny"), // 10 * 1.24 = 12.4
-            createBetEvent(1, BetStatus.ACTIVE, 1, 10, "gbp", "ny"), // 10 * 1.24 = 12.4
+    public static BetEvent[] betEvents = generateRandomBetEvents(1, 5);
 
-            createBetEvent(2, BetStatus.ACTIVE, 1, 15, "cad", "wa"), // 15 * 0.74 = 11.1
-            createBetEvent(2, BetStatus.ACTIVE, 1, 15, "cad", "wa"), // 15 * 0.74 = 11.1
+    public Bet bet;
+    public BetState state;
+    public int flag; // This flag will determine if the created bet gets settled (0), cashed out (1), partial cashout (2)
 
-            createBetEvent(3, BetStatus.ACTIVE, 2, 5, "eur", "fl"), // 5 * 1.09 = 5.45
-            createBetEvent(3, BetStatus.ACTIVE, 2, 5, "eur", "fl"), // 5 * 1.09 = 5.45
+    private static BetEvent createBetEvent(
+            int betId, int selectionId, float stake, BetAction betAction, float potentialWin, String destination, String currency
 
-            createBetEvent(4, BetStatus.ACTIVE, 3, 20, "jpy", "ca"), // 20 * 0.0075 = 0.15
-            createBetEvent(4, BetStatus.ACTIVE, 3, 20, "jpy", "ca"), // 20 * 0.0075 = 0.15
-
-            createBetEvent(1, BetStatus.CASHED_OUT, 1, 10, "gbp", "ny"),
-            createBetEvent(1, BetStatus.CASHED_OUT, 1, 10, "gbp", "ny"),
-
-            createBetEvent(2, BetStatus.SETTLED, 2, 5, "eur", "fl"),
-            createBetEvent(2, BetStatus.SETTLED, 2, 5, "eur", "fl")
-    };*/
-    public static BetEvent[] betEvents = generateRandomBetEvents(100, 5);
-    public int betId;
-    public int selectionId;
-    public float stake;
-    public String destination;
-    public String currency;
-    public BetStatus status;
-
-    public String getKey() {
-        return String.format("%s-%s", betId, status.name().substring(0, 1));
-    }
-
-    private static BetEvent createBetEvent(int betId, BetStatus status, int selectionId, float stake, String currency, String destination) {
+    ) {
         BetEvent betEvent = new BetEvent();
-        betEvent.betId = betId;
-        betEvent.status = status;
-        betEvent.selectionId = selectionId;
-        betEvent.stake = stake;
-        betEvent.currency = currency;
-        betEvent.destination = destination;
 
+
+        switch (betAction) {
+            case PLACEMENT:
+                betEvent.bet = new Bet(
+                        betId, selectionId, stake, stake, 0, potentialWin, destination,
+                        currency, BetStatus.ACTIVE, BetResult.NONE, Collections.emptyList()
+                );
+                betEvent.state = BetState.ACTIVE;
+                break;
+            case SETTLEMENT:
+                betEvent.bet = new Bet(
+                        betId, selectionId, stake, stake, 0, potentialWin, destination,
+                        currency, BetStatus.SETTLED, BetResult.LOST, Collections.emptyList()
+                );
+                betEvent.state = BetState.FINAL;
+                break;
+            case CASHOUT:
+                betEvent.bet = new Bet(
+                        betId, selectionId, stake, stake, stake, potentialWin, destination,
+                        currency, BetStatus.SETTLED, BetResult.CASHED_OUT, Collections.emptyList()
+                );
+                betEvent.state = BetState.FINAL;
+                break;
+            case PARTIAL_CASHOUT:
+                betEvent.bet = new Bet(
+                        betId, selectionId, stake, stake / 2, potentialWin / 6, potentialWin, destination,
+                        currency, BetStatus.ACTIVE, BetResult.NONE, buildChangeInTerms()
+                );
+                betEvent.state = BetState.ACTIVE;
+                break;
+        }
+
+        int flag =  new Random().nextInt(3);
+
+        betEvent.flag = flag;
         return betEvent;
     }
 
@@ -55,18 +66,22 @@ public class BetEvent {
         String[] currencyCodes = new String[] { "cad", "gbp", "eur", "jpy" };
         String[] destinations = new String[] { "ca", "ny", "wa", "fl" };
         Random random = new Random();
+
+        int stake = random.nextInt(100);
         int currentCurrencyCodeIndex = 0;
         int currentDestinationIndex = 0;
 
+        // create placed bet messages
         for(int i = 0; i < count; i+=1) {
             betEvents[i] = createBetEvent(
                     random.nextInt(99999),
-                    BetStatus.ACTIVE,
                     random.nextInt(selectionCount),
-                    random.nextInt(100),
-                    currencyCodes[currentCurrencyCodeIndex],
-                    destinations[currentDestinationIndex]
-            );
+                    stake,
+                    BetAction.PLACEMENT,
+                    (float) (stake * 1.5),
+                    destinations[currentDestinationIndex],
+                    currencyCodes[currentCurrencyCodeIndex]
+                    );
 
             currentCurrencyCodeIndex += 1;
             if(currentCurrencyCodeIndex >= currencyCodes.length) {
@@ -79,6 +94,56 @@ public class BetEvent {
             }
         }
 
-        return betEvents;
+
+        List<BetEvent> placementMessages = Arrays.stream(betEvents).collect(Collectors.toList());
+        List<BetEvent> settlementMessages = Arrays.stream(betEvents).filter(betEvent -> betEvent.flag == 0)
+                .map( betEvent -> createBetEvent(
+                        betEvent.bet.betId,
+                        betEvent.bet.selectionId,
+                        stake,
+                        BetAction.SETTLEMENT,
+                        (float) (stake * 1.5),
+                        betEvent.bet.destination,
+                        betEvent.bet.currency
+                )).collect(Collectors.toList());
+
+        List<BetEvent> cashoutMessages = Arrays.stream(betEvents).filter(betEvent -> betEvent.flag == 1)
+                .map( betEvent -> createBetEvent(
+                        betEvent.bet.betId,
+                        betEvent.bet.selectionId,
+                        stake,
+                        BetAction.CASHOUT,
+                        (float) (stake * 1.5),
+                        betEvent.bet.destination,
+                        betEvent.bet.currency
+                )).collect(Collectors.toList());
+
+        List<BetEvent> pcoMessages = Arrays.stream(betEvents).filter(betEvent -> betEvent.flag == 2)
+                .map( betEvent -> createBetEvent(
+                        betEvent.bet.betId,
+                        betEvent.bet.selectionId,
+                        stake,
+                        BetAction.PARTIAL_CASHOUT,
+                        (float) (stake * 1.2),
+                        betEvent.bet.destination,
+                        betEvent.bet.currency
+                )).collect(Collectors.toList());
+
+
+        placementMessages.addAll(cashoutMessages);
+        placementMessages.addAll(pcoMessages);
+        placementMessages.addAll(settlementMessages);
+
+        BetEvent[] itemsArray = new BetEvent[placementMessages.size()];
+        itemsArray = placementMessages.toArray(itemsArray);
+
+        return itemsArray;
+    }
+
+    public static List<ChangeInTerms> buildChangeInTerms() {
+        return Arrays.asList(
+                new ChangeInTerms(0, ORIGINAL_VALUES),
+                new ChangeInTerms(1, PARTIAL_CASHOUT)
+        );
     }
 }
